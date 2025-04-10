@@ -17,21 +17,71 @@ export class AEMEmbed extends HTMLElement {
     this.initialized = false;
   }
 
+  async loadBlock(body, block, blockName, origin) {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', `${origin}/blocks/${blockName}/${blockName}.css`);
+
+    const cssLoaded = new Promise((resolve) => {
+      link.onload = resolve;
+      link.onerror = resolve;
+    });
+
+    body.appendChild(link);
+    // eslint-disable-next-line no-await-in-loop
+    await cssLoaded;
+
+    try {
+      const blockScriptUrl = `${origin}/blocks/${blockName}/${blockName}.js`;
+      // eslint-disable-next-line no-await-in-loop
+      const decorateBlock = await import(blockScriptUrl);
+      if (decorateBlock.default) {
+        // eslint-disable-next-line no-await-in-loop
+        await decorateBlock.default(block);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log('An error occured while loading the content');
+    }
+  }
+
   async handleHeader(htmlText, body, origin) {
     console.log('header');
     const header = document.createElement('header');
     body.append(header);
-    header.innerHTML = htmlText;
 
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
 
-    const { loadHeader } = await import(`${origin}/scripts/aem.js`);
-    if (loadHeader) {
-      await loadHeader(header);
-    }
+    const { buildBlock, decorateBlock } = await import(`${origin}/scripts/aem.js`);
+    const headerBlock = buildBlock('header', '');
+    header.append(headerBlock);
+    decorateBlock(headerBlock);
+    await this.loadBlock(body, headerBlock, 'header', origin);
+    headerBlock.dataset.blockStatus = 'loaded';
+    body.classList.add('appear');
+    body.style.height = 'var(--nav-height)';
   }
+
+  async handleFooter(htmlText, body, origin) {
+    console.log('footer');
+    const footer = document.createElement('footer');
+    body.append(footer);
+
+    // Load scripts file for embed host site
+    window.hlx = window.hlx || {};
+    window.hlx.suppressLoadPage = true;
+
+    const { buildBlock, decorateBlock } = await import(`${origin}/scripts/aem.js`);
+    const footerBlock = buildBlock('footer', '');
+    footer.append(footerBlock);
+    decorateBlock(footerBlock);
+    await this.loadBlock(body, footerBlock, 'footer', origin);
+    footerBlock.dataset.blockStatus = 'loaded';
+    body.classList.add('appear');
+  }
+
 
   async handleMain(htmlText, body, origin) {
     const main = document.createElement('main');
@@ -56,7 +106,7 @@ export class AEMEmbed extends HTMLElement {
 
       const { decorateMain } = await import(`${origin}/scripts/scripts.js`);
       if (decorateMain) {
-        await decorateMain(main);
+        await decorateMain(main, true);
       }
       body.classList.add('appear');
 
@@ -64,35 +114,12 @@ export class AEMEmbed extends HTMLElement {
       for (let i = 0; i < blockElements.length; i += 1) {
         const blockName = blocks[i];
         const block = blockElements[i];
-        const link = document.createElement('link');
-        link.setAttribute('rel', 'stylesheet');
-        link.setAttribute('href', `${origin}/blocks/${blockName}/${blockName}.css`);
-
-        const cssLoaded = new Promise((resolve) => {
-          link.onload = resolve;
-          link.onerror = resolve;
-        });
-
-        body.appendChild(link);
-        // eslint-disable-next-line no-await-in-loop
-        await cssLoaded;
-
-        try {
-          const blockScriptUrl = `${origin}/blocks/${blockName}/${blockName}.js`;
-          // eslint-disable-next-line no-await-in-loop
-          const decorateBlock = await import(blockScriptUrl);
-          if (decorateBlock.default) {
-            // eslint-disable-next-line no-await-in-loop
-            await decorateBlock.default(block);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log('An error occured while loading the content');
-        }
+        this.loadBlock(body, block, blockName, origin);
       }
       const sections = main.querySelectorAll('.section');
       sections.forEach((s) => {
         s.dataset.sectionStatus = 'loaded';
+        s.style = '';
       });
     }
   }
@@ -111,7 +138,7 @@ export class AEMEmbed extends HTMLElement {
         }
 
         const type = this.getAttribute('type') || 'main';
-        console.log('type', type.value);
+        console.log('type', type);
 
         const body = document.createElement('body');
         body.style = 'display: none';
@@ -138,6 +165,7 @@ export class AEMEmbed extends HTMLElement {
         htmlText = htmlText.replace(regex, `${origin}/media`);
         if (type === 'main') await this.handleMain(htmlText, body, origin);
         if (type === 'header') await this.handleHeader(htmlText, body, origin);
+        if (type === 'footer') await this.handleFooter(htmlText, body, origin);
 
       } catch (err) {
         // eslint-disable-next-line no-console
