@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframed</title>
+    <script src="/scripts/aem-embed.js" type="module"></script>
+  </head>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get("url");
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const embed = document.createElement('aem-embed');
+      embed.setAttribute('url', url || 'https://main--embed-example--aemsites.aem.page/banners/banner1');
+      document.body.appendChild(embed);
+    });
+  </script>
+  <body></body>
+</html>

@@ -108,7 +108,6 @@ export class AEMEmbed extends HTMLElement {
       if (decorateMain) {
         await decorateMain(main, true);
       }
-      body.classList.add('appear');
 
       // For each block in the embed load it's js/css
       for (let i = 0; i < blockElements.length; i += 1) {
@@ -116,12 +115,15 @@ export class AEMEmbed extends HTMLElement {
         const block = blockElements[i];
         this.loadBlock(body, block, blockName, origin);
       }
-      const sections = main.querySelectorAll('.section');
-      sections.forEach((s) => {
-        s.dataset.sectionStatus = 'loaded';
-        s.style = '';
-      });
     }
+  
+    const sections = main.querySelectorAll('.section');
+    sections.forEach((s) => {
+      s.dataset.sectionStatus = 'loaded';
+      s.style = '';
+    });
+    
+    body.classList.add('appear');
   }
 
   /**
@@ -144,7 +146,9 @@ export class AEMEmbed extends HTMLElement {
         body.style = 'display: none';
         this.shadowRoot.append(body);
 
-        const { href, origin } = new URL(`${urlAttribute.value}.plain.html`);
+        const url = urlAttribute.value;
+        const plainUrl = url.endsWith('/') ? `${url}index.plain.html` : `${url}.plain.html`;
+        const { href, origin } = new URL(plainUrl);
 
         // Load fragment
         const resp = await fetch(href);
