@@ -18,6 +18,7 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async loadBlock(body, block, blockName, origin) {
+    console.log('loadBlock', blockName);
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', `${origin}/blocks/${blockName}/${blockName}.css`);
@@ -47,41 +48,59 @@ export class AEMEmbed extends HTMLElement {
 
   async handleHeader(htmlText, body, origin) {
     console.log('header');
-    const header = document.createElement('header');
-    body.append(header);
 
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
 
-    const { buildBlock, decorateBlock } = await import(`${origin}/scripts/aem.js`);
-    const headerBlock = buildBlock('header', '');
-    header.append(headerBlock);
-    decorateBlock(headerBlock);
-    await this.loadBlock(body, headerBlock, 'header', origin);
-    headerBlock.dataset.blockStatus = 'loaded';
-    body.classList.add('appear');
+    await this.handleMain(htmlText, body, origin);
+    
+    const main = body.querySelector('main');
+    const header = document.createElement('header');
+    body.append(header);
+    const { buildBlock } = await import(`${origin}/scripts/aem.js`);
+    const block = buildBlock('header', '');
+    header.append(block);
+
+    const cell = block.firstElementChild.firstElementChild;
+    const nav = document.createElement('nav');
+    cell.append(nav);
+    while (main.firstElementChild) nav.append(main.firstElementChild);
+    main.remove();
+
+    await this.loadBlock(body, block, 'header', origin);
+
+    block.dataset.blockStatus = 'loaded';
+
     body.style.height = 'var(--nav-height)';
   }
 
   async handleFooter(htmlText, body, origin) {
     console.log('footer');
-    const footer = document.createElement('footer');
-    body.append(footer);
 
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
 
-    const { buildBlock, decorateBlock } = await import(`${origin}/scripts/aem.js`);
-    const footerBlock = buildBlock('footer', '');
-    footer.append(footerBlock);
-    decorateBlock(footerBlock);
-    await this.loadBlock(body, footerBlock, 'footer', origin);
-    footerBlock.dataset.blockStatus = 'loaded';
-    body.classList.add('appear');
-  }
+    await this.handleMain(htmlText, body, origin);
+    
+    const main = body.querySelector('main');
+    const footer = document.createElement('footer');
+    body.append(footer);
+    const { buildBlock } = await import(`${origin}/scripts/aem.js`);
+    const block = buildBlock('footer', '');
+    footer.append(block);
 
+    const cell = block.firstElementChild.firstElementChild;
+    const nav = document.createElement('nav');
+    cell.append(nav);
+    while (main.firstElementChild) nav.append(main.firstElementChild);
+    main.remove();
+
+    await this.loadBlock(body, block, 'footer', origin);
+
+    block.dataset.blockStatus = 'loaded';
+  }
 
   async handleMain(htmlText, body, origin) {
     const main = document.createElement('main');
@@ -91,6 +110,16 @@ export class AEMEmbed extends HTMLElement {
     // Set initialized to true so we don't run through this again
     this.initialized = true;
 
+    // Load scripts file for embed host site
+    window.hlx = window.hlx || {};
+    window.hlx.suppressLoadPage = true;
+
+    const { decorateMain } = await import(`${origin}/scripts/scripts.js`);
+    if (decorateMain) {
+      await decorateMain(main, true);
+    }
+
+
     // Query all the blocks in the aem content
     // The blocks are in the first div inside the main tag
     const blockElements = main.querySelectorAll(':scope > div > div');
@@ -99,15 +128,6 @@ export class AEMEmbed extends HTMLElement {
     if (blockElements.length > 0) {
       // Get the block names
       const blocks = Array.from(blockElements).map((block) => block.classList.item(0));
-
-      // Load scripts file for embed host site
-      window.hlx = window.hlx || {};
-      window.hlx.suppressLoadPage = true;
-
-      const { decorateMain } = await import(`${origin}/scripts/scripts.js`);
-      if (decorateMain) {
-        await decorateMain(main, true);
-      }
 
       // For each block in the embed load it's js/css
       for (let i = 0; i < blockElements.length; i += 1) {
