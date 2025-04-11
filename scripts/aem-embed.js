@@ -107,9 +107,6 @@ export class AEMEmbed extends HTMLElement {
     body.append(main);
     main.innerHTML = htmlText;
 
-    // Set initialized to true so we don't run through this again
-    this.initialized = true;
-
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
@@ -122,7 +119,7 @@ export class AEMEmbed extends HTMLElement {
 
     // Query all the blocks in the aem content
     // The blocks are in the first div inside the main tag
-    const blockElements = main.querySelectorAll(':scope > div > div');
+    const blockElements = main.querySelectorAll('.block');
 
     // Did we find any blocks or all default content?
     if (blockElements.length > 0) {
@@ -187,6 +184,10 @@ export class AEMEmbed extends HTMLElement {
         // Fix relative image urls
         const regex = /.\/media/g;
         htmlText = htmlText.replace(regex, `${origin}/media`);
+
+        // Set initialized to true so we don't run through this again
+        this.initialized = true;
+ 
         if (type === 'main') await this.handleMain(htmlText, body, origin);
         if (type === 'header') await this.handleHeader(htmlText, body, origin);
         if (type === 'footer') await this.handleFooter(htmlText, body, origin);
