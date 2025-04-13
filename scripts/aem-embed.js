@@ -18,7 +18,6 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async loadBlock(body, block, blockName, origin) {
-    console.log('loadBlock', blockName);
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', `${origin}/blocks/${blockName}/${blockName}.css`);
@@ -47,8 +46,6 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async handleHeader(htmlText, body, origin) {
-    console.log('header');
-
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
@@ -77,8 +74,6 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async handleFooter(htmlText, body, origin) {
-    console.log('footer');
-
     // Load scripts file for embed host site
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
@@ -163,7 +158,6 @@ export class AEMEmbed extends HTMLElement {
         }
 
         const type = this.getAttribute('type') || 'main';
-        console.log('type', type);
 
         const body = document.createElement('body');
         body.style = 'display: none';
