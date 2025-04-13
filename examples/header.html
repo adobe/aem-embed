@@ -12,6 +12,15 @@
               display: block;
               border: 3px dotted red;
             }
+
+            aem-embed.header {
+              min-height: 64px;
+              margin: 0 -12px;
+            }
+
+            aem-embed.footer {
+              min-height: 281px;
+            }
     
         </style>
     
@@ -19,9 +28,9 @@
     <body>
         <main>
             <h1>Header</h1>
-            <aem-embed url="https://main--embed-example--aemsites.aem.page/nav" type="header"></aem-embed>
+            <aem-embed class="header" url="https://main--embed-example--aemsites.aem.page/nav" type="header"></aem-embed>
             <h1>Footer</h1>
-            <aem-embed url="https://main--embed-example--aemsites.aem.page/footer" type="footer"></aem-embed>        </footer>
+            <aem-embed class="footer" url="https://main--embed-example--aemsites.aem.page/footer" type="footer"></aem-embed>        </footer>
         </main>
     </body>
 </html>
