@@ -53,7 +53,7 @@ export class AEMEmbed extends HTMLElement {
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
 
-    await this.handleMain(htmlText, body, origin);
+    await this.pseudoDecorateMain(htmlText, body, origin);
     
     const main = body.querySelector('main');
     const header = document.createElement('header');
@@ -73,6 +73,7 @@ export class AEMEmbed extends HTMLElement {
     block.dataset.blockStatus = 'loaded';
 
     body.style.height = 'var(--nav-height)';
+    body.classList.add('appear');
   }
 
   async handleFooter(htmlText, body, origin) {
@@ -82,7 +83,7 @@ export class AEMEmbed extends HTMLElement {
     window.hlx = window.hlx || {};
     window.hlx.suppressLoadPage = true;
 
-    await this.handleMain(htmlText, body, origin);
+    await this.pseudoDecorateMain(htmlText, body, origin);
     
     const main = body.querySelector('main');
     const footer = document.createElement('footer');
@@ -100,9 +101,10 @@ export class AEMEmbed extends HTMLElement {
     await this.loadBlock(body, block, 'footer', origin);
 
     block.dataset.blockStatus = 'loaded';
+    body.classList.add('appear');
   }
 
-  async handleMain(htmlText, body, origin) {
+  async pseudoDecorateMain(htmlText, body, origin) {
     const main = document.createElement('main');
     body.append(main);
     main.innerHTML = htmlText;
@@ -140,6 +142,10 @@ export class AEMEmbed extends HTMLElement {
       s.style = '';
     });
     
+  }
+
+  async handleMain(htmlText, body, origin) {
+    await this.pseudoDecorateMain(htmlText, body, origin)
     body.classList.add('appear');
   }
 
