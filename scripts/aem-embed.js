@@ -130,7 +130,7 @@ export class AEMEmbed extends HTMLElement {
       for (let i = 0; i < blockElements.length; i += 1) {
         const blockName = blocks[i];
         const block = blockElements[i];
-        this.loadBlock(body, block, blockName, origin);
+        await this.loadBlock(body, block, blockName, origin);
       }
     }
   
