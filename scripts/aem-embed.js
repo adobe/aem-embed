@@ -15,12 +15,16 @@ export class AEMEmbed extends HTMLElement {
 
     // Keep track if we have rendered the fragment yet.
     this.initialized = false;
+
+    window.hlx = window.hlx || {};
+    window.hlx.suppressLoadPage = true;
+    [window.hlx.codeBasePath] = new URL(import.meta.url).pathname.split('/scripts/');
   }
 
   async loadBlock(body, block, blockName, origin) {
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('href', `${origin}/blocks/${blockName}/${blockName}.css`);
+    link.setAttribute('href', `${origin}${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
 
     const cssLoaded = new Promise((resolve) => {
       link.onload = resolve;
@@ -32,7 +36,7 @@ export class AEMEmbed extends HTMLElement {
     await cssLoaded;
 
     try {
-      const blockScriptUrl = `${origin}/blocks/${blockName}/${blockName}.js`;
+      const blockScriptUrl = `${origin}${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.js`;
       // eslint-disable-next-line no-await-in-loop
       const decorateBlock = await import(blockScriptUrl);
       if (decorateBlock.default) {
@@ -46,16 +50,12 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async handleHeader(htmlText, body, origin) {
-    // Load scripts file for embed host site
-    window.hlx = window.hlx || {};
-    window.hlx.suppressLoadPage = true;
-
     await this.pseudoDecorateMain(htmlText, body, origin);
     
     const main = body.querySelector('main');
     const header = document.createElement('header');
     body.append(header);
-    const { buildBlock } = await import(`${origin}/scripts/aem.js`);
+    const { buildBlock } = await import(`${origin}${window.hlx.codeBasePath}/scripts/aem.js`);
     const block = buildBlock('header', '');
     header.append(block);
 
@@ -74,16 +74,12 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async handleFooter(htmlText, body, origin) {
-    // Load scripts file for embed host site
-    window.hlx = window.hlx || {};
-    window.hlx.suppressLoadPage = true;
-
     await this.pseudoDecorateMain(htmlText, body, origin);
     
     const main = body.querySelector('main');
     const footer = document.createElement('footer');
     body.append(footer);
-    const { buildBlock } = await import(`${origin}/scripts/aem.js`);
+    const { buildBlock } = await import(`${origin}${window.hlx.codeBasePath}/scripts/aem.js`);
     const block = buildBlock('footer', '');
     footer.append(block);
 
@@ -104,11 +100,7 @@ export class AEMEmbed extends HTMLElement {
     body.append(main);
     main.innerHTML = htmlText;
 
-    // Load scripts file for embed host site
-    window.hlx = window.hlx || {};
-    window.hlx.suppressLoadPage = true;
-
-    const { decorateMain } = await import(`${origin}/scripts/scripts.js`);
+    const { decorateMain } = await import(`${origin}${window.hlx.codeBasePath}/scripts/scripts.js`);
     if (decorateMain) {
       await decorateMain(main, true);
     }
@@ -175,7 +167,7 @@ export class AEMEmbed extends HTMLElement {
 
         const styles = document.createElement('link');
         styles.setAttribute('rel', 'stylesheet');
-        styles.setAttribute('href', `${origin}/styles/styles.css`);
+        styles.setAttribute('href', `${origin}${window.hlx.codeBasePath}/styles/styles.css`);
         styles.onload = () => { body.style = ''; };
         styles.onerror = () => { body.style = ''; };
         this.shadowRoot.appendChild(styles);
