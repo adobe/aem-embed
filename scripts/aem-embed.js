@@ -22,18 +22,21 @@ export class AEMEmbed extends HTMLElement {
   }
 
   async loadBlock(body, block, blockName, origin) {
-    const link = document.createElement('link');
-    link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('href', `${origin}${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
-
-    const cssLoaded = new Promise((resolve) => {
-      link.onload = resolve;
-      link.onerror = resolve;
-    });
-
-    body.appendChild(link);
-    // eslint-disable-next-line no-await-in-loop
-    await cssLoaded;
+    const blockCss = `${origin}${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`;
+    if (!body.querySelector(`link[href="${blockCss}"]`)) {
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('href', blockCss);
+  
+      const cssLoaded = new Promise((resolve) => {
+        link.onload = resolve;
+        link.onerror = resolve;
+      });
+  
+      body.appendChild(link);
+      // eslint-disable-next-line no-await-in-loop
+      await cssLoaded;
+    }
 
     try {
       const blockScriptUrl = `${origin}${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.js`;
@@ -104,7 +107,6 @@ export class AEMEmbed extends HTMLElement {
     if (decorateMain) {
       await decorateMain(main, true);
     }
-
 
     // Query all the blocks in the aem content
     // The blocks are in the first div inside the main tag
