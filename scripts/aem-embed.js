@@ -186,6 +186,10 @@ export class AEMEmbed extends HTMLElement {
         if (type === 'header') await this.handleHeader(htmlText, body, origin);
         if (type === 'footer') await this.handleFooter(htmlText, body, origin);
 
+        const fonts = document.createElement('link');
+        fonts.setAttribute('rel', 'stylesheet');
+        fonts.setAttribute('href', `${origin}${window.hlx.codeBasePath}/styles/fonts.css`);
+        this.shadowRoot.appendChild(fonts);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(err || 'An error occured while loading the content');
